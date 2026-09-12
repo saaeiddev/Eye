@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#07131d" />
+  <meta name="description" content="An immersive interactive 3D eye anatomy experience powered by BioDigital." />
+  <title>EYE — Interactive 3D Anatomy</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #061019;
+      --surface: rgba(14, 31, 43, 0.56);
+      --surface-strong: rgba(10, 25, 36, 0.78);
+      --line: rgba(255, 255, 255, 0.13);
+      --line-soft: rgba(255, 255, 255, 0.08);
+      --text: #f4fbff;
+      --muted: #9db1be;
+      --cyan: #77e6ff;
+      --blue: #7ca8ff;
+      --violet: #a990ff;
+      --shadow: 0 30px 80px rgba(0, 0, 0, 0.42);
+      --radius-xl: 32px;
+      --radius-lg: 24px;
+      --radius-md: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      font-family: "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 14% 10%, rgba(80, 210, 255, 0.16), transparent 28%),
+        radial-gradient(circle at 86% 14%, rgba(125, 106, 255, 0.15), transparent 30%),
+        radial-gradient(circle at 50% 100%, rgba(0, 171, 255, 0.1), transparent 34%),
+        linear-gradient(145deg, #04101a 0%, #081823 48%, #050c14 100%);
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      pointer-events: none;
+      z-index: -1;
+      border-radius: 999px;
+      filter: blur(10px);
+      opacity: 0.65;
+    }
+
+    body::before {
+      width: 360px;
+      height: 360px;
+      top: -140px;
+      left: -120px;
+      background: radial-gradient(circle, rgba(101, 224, 255, 0.2), transparent 70%);
+      animation: drift 16s ease-in-out infinite alternate;
+    }
+
+    body::after {
+      width: 420px;
+      height: 420px;
+      right: -180px;
+      bottom: -160px;
+      background: radial-gradient(circle, rgba(142, 113, 255, 0.18), transparent 70%);
+      animation: drift 18s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes drift {
+      from { transform: translate3d(0, 0, 0) scale(1); }
+      to { transform: translate3d(34px, 24px, 0) scale(1.08); }
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+
+    .page-shell {
+      width: min(1560px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 18px 0 28px;
+    }
+
+    .glass {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.028));
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      -webkit-backdrop-filter: blur(24px) saturate(140%);
+      backdrop-filter: blur(24px) saturate(140%);
+    }
+
+    .topbar {
+      min-height: 72px;
+      padding: 12px 14px 12px 18px;
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      position: sticky;
+      top: 14px;
+      z-index: 20;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      background:
+        radial-gradient(circle at 35% 35%, rgba(255,255,255,.95) 0 5%, transparent 6%),
+        radial-gradient(circle at center, rgba(7,21,33,1) 0 24%, rgba(93,218,255,.95) 25% 42%, rgba(255,255,255,.92) 43% 55%, transparent 56%),
+        linear-gradient(135deg, rgba(119,230,255,.28), rgba(125,126,255,.24));
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 8px 24px rgba(44, 195, 255, 0.18);
+      flex: 0 0 auto;
+    }
+
+    .brand-copy { min-width: 0; }
+
+    .brand-copy strong {
+      display: block;
+      font: 800 14px/1 "Manrope", sans-serif;
+      letter-spacing: 0.18em;
+    }
+
+    .brand-copy span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pill,
+    .icon-btn {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--text);
+      min-height: 44px;
+      border-radius: 15px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform .25s ease, background .25s ease, border-color .25s ease;
+    }
+
+    .pill {
+      padding: 0 16px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .icon-btn { width: 44px; }
+
+    .pill:hover,
+    .icon-btn:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.09);
+      border-color: rgba(119, 230, 255, 0.36);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.38fr) minmax(0, 1fr);
+      gap: 18px;
+      margin-top: 18px;
+      min-height: calc(100dvh - 126px);
+    }
+
+    .info-panel {
+      border-radius: var(--radius-xl);
+      padding: clamp(24px, 3vw, 42px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 28px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .info-panel::after {
+      content: "";
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      right: -170px;
+      top: -120px;
+      border: 1px solid rgba(119,230,255,.17);
+      box-shadow: 0 0 0 34px rgba(119,230,255,.025), 0 0 0 70px rgba(119,230,255,.018);
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      color: #c9f7ff;
+      font: 700 11px/1 "Manrope", sans-serif;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+      padding: 9px 11px;
+      border-radius: 999px;
+      background: rgba(119,230,255,.08);
+      border: 1px solid rgba(119,230,255,.16);
+    }
+
+    .eyebrow i {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 16px var(--cyan);
+    }
+
+    h1 {
+      margin: 20px 0 14px;
+      max-width: 620px;
+      font: 800 clamp(42px, 5.4vw, 80px)/0.95 "Manrope", sans-serif;
+      letter-spacing: -0.065em;
+    }
+
+    h1 span {
+      display: block;
+      background: linear-gradient(120deg, #ffffff 8%, #98edff 46%, #aca0ff 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .lead {
+      margin: 0;
+      max-width: 520px;
+      color: var(--muted);
+      font-size: clamp(14px, 1.2vw, 17px);
+      line-height: 1.75;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 26px;
+    }
+
+    .feature {
+      padding: 15px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.038);
+      border: 1px solid var(--line-soft);
+    }
+
+    .feature strong {
+      display: block;
+      font: 700 12px/1.2 "Manrope", sans-serif;
+    }
+
+    .feature span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .meta-row {
+      padding-top: 22px;
+      border-top: 1px solid var(--line-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: #d2f9ff;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #6dffca;
+      box-shadow: 0 0 14px rgba(109, 255, 202, .7);
+    }
+
+    .viewer-panel {
+      border-radius: var(--radius-xl);
+      padding: 10px;
+      min-height: 660px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .viewer-toolbar {
+      position: absolute;
+      top: 22px;
+      left: 22px;
+      right: 22px;
+      z-index: 4;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .viewer-toolbar > * { pointer-events: auto; }
+
+    .viewer-label,
+    .viewer-tip {
+      min-height: 38px;
+      padding: 0 12px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(4, 17, 27, .62);
+      -webkit-backdrop-filter: blur(16px);
+      backdrop-filter: blur(16px);
+      border-radius: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #d7e8ef;
+      font-size: 11px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.18);
+    }
+
+    .viewer-label strong {
+      font-family: "Manrope", sans-serif;
+      letter-spacing: .05em;
+      color: #fff;
+    }
+
+    .model-frame {
+      width: 100%;
+      height: 100%;
+      min-height: 640px;
+      border: 0;
+      border-radius: 24px;
+      display: block;
+      background: #07131d;
+    }
+
+    .section {
+      margin-top: 18px;
+      padding: 28px;
+      border-radius: var(--radius-xl);
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 20px;
+      margin-bottom: 18px;
+    }
+
+    .section h2 {
+      margin: 0;
+      font: 800 clamp(24px, 3vw, 38px)/1 "Manrope", sans-serif;
+      letter-spacing: -0.045em;
+    }
+
+    .section p {
+      color: var(--muted);
+      margin: 8px 0 0;
+      max-width: 740px;
+      line-height: 1.7;
+      font-size: 13px;
+    }
+
+    .anatomy-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .anatomy-card {
+      min-height: 134px;
+      padding: 18px;
+      border-radius: var(--radius-lg);
+      background: linear-gradient(145deg, rgba(255,255,255,.055), rgba(255,255,255,.022));
+      border: 1px solid var(--line-soft);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .anatomy-card::before {
+      content: "";
+      position: absolute;
+      inset: auto -28px -38px auto;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(119,230,255,.11), transparent 70%);
+    }
+
+    .card-index {
+      display: inline-grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      margin-bottom: 18px;
+      background: rgba(119,230,255,.08);
+      border: 1px solid rgba(119,230,255,.13);
+      color: #a9efff;
+      font: 700 10px/1 "Manrope", sans-serif;
+    }
+
+    .anatomy-card strong {
+      display: block;
+      font: 700 13px/1.2 "Manrope", sans-serif;
+    }
+
+    .anatomy-card span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+    }
+
+    .footer {
+      padding: 22px 8px 2px;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      color: #8197a5;
+      font-size: 11px;
+    }
+
+    .footer a { color: #bdefff; }
+
+    @media (max-width: 1120px) {
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .info-panel { min-height: auto; }
+      h1 { max-width: 760px; }
+      .viewer-panel { min-height: 70dvh; }
+      .model-frame { min-height: calc(70dvh - 20px); }
+      .anatomy-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 720px) {
+      .page-shell {
+        width: min(100% - 16px, 1560px);
+        padding-top: 8px;
+      }
+
+      .topbar {
+        min-height: 62px;
+        top: 8px;
+        border-radius: 20px;
+        padding: 9px 10px 9px 12px;
+      }
+
+      .brand-mark { width: 40px; height: 40px; border-radius: 13px; }
+      .brand-copy span { display: none; }
+      .nav-actions .pill { display: none; }
+
+      .hero { margin-top: 10px; gap: 10px; }
+      .info-panel { border-radius: 25px; padding: 24px 20px; gap: 22px; }
+
+      h1 {
+        margin-top: 16px;
+        font-size: clamp(42px, 16vw, 62px);
+        line-height: .94;
+      }
+
+      .lead { font-size: 14px; line-height: 1.65; }
+      .feature-grid { margin-top: 20px; }
+      .feature { padding: 13px; }
+      .meta-row { padding-top: 18px; }
+
+      .viewer-panel {
+        min-height: 68dvh;
+        height: 68dvh;
+        padding: 7px;
+        border-radius: 25px;
+      }
+
+      .model-frame {
+        min-height: 0;
+        height: 100%;
+        border-radius: 20px;
+      }
+
+      .viewer-toolbar {
+        top: 16px;
+        left: 16px;
+        right: 16px;
+      }
+
+      .viewer-tip { display: none; }
+      .viewer-label { min-height: 34px; font-size: 10px; }
+
+      .section { margin-top: 10px; padding: 22px 16px; border-radius: 25px; }
+      .section-head { align-items: start; }
+      .anatomy-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .anatomy-card { min-height: 126px; padding: 14px; border-radius: 18px; }
+      .footer { padding: 18px 4px 4px; }
+    }
+
+    @media (max-width: 430px) {
+      .feature-grid { grid-template-columns: 1fr; }
+      .anatomy-grid { grid-template-columns: 1fr; }
+      .meta-row { align-items: flex-start; flex-direction: column; gap: 8px; }
+      .viewer-panel { height: 62dvh; min-height: 520px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-shell">
+    <header class="topbar glass" aria-label="Site header">
+      <a class="brand" href="#top" aria-label="EYE home">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div class="brand-copy">
+          <strong>EYE</strong>
+          <span>Interactive Anatomy Experience</span>
+        </div>
+      </a>
+
+      <nav class="nav-actions" aria-label="Primary navigation">
+        <a class="pill" href="#anatomy">Explore anatomy</a>
+        <a class="icon-btn" href="#viewer" aria-label="Jump to 3D viewer" title="3D viewer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 4.5C6.7 4.5 3.1 8.4 2 12c1.1 3.6 4.7 7.5 10 7.5s8.9-3.9 10-7.5c-1.1-3.6-4.7-7.5-10-7.5Z" stroke="currentColor" stroke-width="1.7"/>
+            <circle cx="12" cy="12" r="3.1" stroke="currentColor" stroke-width="1.7"/>
+          </svg>
+        </a>
+      </nav>
+    </header>
+
+    <section class="hero" id="top">
+      <article class="info-panel glass">
+        <div>
+          <div class="eyebrow"><i></i> 3D Human Anatomy</div>
+          <h1>See the eye.<span>Understand it.</span></h1>
+          <p class="lead">
+            Explore the anatomy of the human eye through an interactive 3D model. Rotate, zoom, isolate structures and study the visual system in a focused spatial experience.
+          </p>
+
+          <div class="feature-grid" aria-label="Viewer features">
+            <div class="feature">
+              <strong>Interactive 3D</strong>
+              <span>Rotate and inspect anatomy from multiple angles.</span>
+            </div>
+            <div class="feature">
+              <strong>Layered Anatomy</strong>
+              <span>Explore individual structures with the BioDigital panel.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="meta-row">
+          <span class="status"><span class="status-dot"></span> Interactive model ready</span>
+          <span>Educational experience</span>
+        </div>
+      </article>
+
+      <section class="viewer-panel glass" id="viewer" aria-label="Interactive 3D eye anatomy viewer">
+        <div class="viewer-toolbar" aria-hidden="true">
+          <div class="viewer-label"><strong>LIVE MODEL</strong> · Human Eye</div>
+          <div class="viewer-tip">Drag to rotate · Pinch / scroll to zoom</div>
+        </div>
+
+        <iframe
+          class="model-frame"
+          src="https://human.biodigital.com/widgets/bd-01/?m=client/about/eyeAnatomy.json&dk=4fe0224bd35a140d5939ab43b60fcaf6ca90e954&ui-share=false&ui-fs=false&ui-panel=true"
+          title="BioDigital interactive 3D model of human eye anatomy"
+          allow="fullscreen; xr-spatial-tracking"
+          allowfullscreen
+          loading="eager"
+          referrerpolicy="strict-origin-when-cross-origin">
+        </iframe>
+      </section>
+    </section>
+
+    <section class="section glass" id="anatomy">
+      <div class="section-head">
+        <div>
+          <h2>Inside the human eye</h2>
+          <p>A compact guide to key structures you can investigate directly in the 3D viewer above.</p>
+        </div>
+      </div>
+
+      <div class="anatomy-grid">
+        <article class="anatomy-card">
+          <span class="card-index">01</span>
+          <strong>Cornea</strong>
+          <span>The clear front surface that helps focus incoming light.</span>
+        </article>
+        <article class="anatomy-card">
+          <span class="card-index">02</span>
+          <strong>Iris &amp; Pupil</strong>
+          <span>The iris controls pupil size and regulates how much light enters.</span>
+        </article>
+        <article class="anatomy-card">
+          <span class="card-index">03</span>
+          <strong>Lens</strong>
+          <span>A flexible transparent structure that fine-tunes focus.</span>
+        </article>
+        <article class="anatomy-card">
+          <span class="card-index">04</span>
+          <strong>Retina</strong>
+          <span>Light-sensitive tissue that converts visual input into neural signals.</span>
+        </article>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>EYE · Interactive 3D Anatomy</span>
+      <span>3D anatomy model powered by <a href="https://www.biodigital.com/" target="_blank" rel="noopener noreferrer">BioDigital</a></span>
+    </footer>
+  </main>
+</body>
+</html>
