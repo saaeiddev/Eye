@@ -199,26 +199,146 @@ function initMuscles(){
 
 function initCortex(){
   const c=section.querySelector('#cortex3d');if(!c)return;
-  const v=setup(c,[7.2,4.7,11.8],[0,0,-1.25]);const {scene,loopFns}=v;v.controls.minDistance=6;v.controls.maxDistance=18;
-  const labels=lang()==='fa'?{chiasm:'کیاسمای بینایی',lgn:'LGN',v1:'قشر بینایی'}:{chiasm:'Optic chiasm',lgn:'LGN',v1:'Visual cortex'};
-  const leftEye=makeEye(.66),rightEye=makeEye(.66);leftEye.position.set(-1.35,0,3.25);rightEye.position.set(1.35,0,3.25);leftEye.rotation.y=.04;rightEye.rotation.y=-.04;scene.add(leftEye,rightEye);
-  const nerveMat=basic(0xd9bc98,{roughness:.78});const leftN=tube([[-1.35,0,2.35],[-1.2,0,1.55],[-.55,0,.62]],.14,nerveMat,64);const rightN=tube([[1.35,0,2.35],[1.2,0,1.55],[.55,0,.62]],.14,nerveMat.clone(),64);scene.add(leftN.mesh,rightN.mesh);
-  const chiasm=new THREE.Mesh(new THREE.SphereGeometry(.4,36,24),mat(0xd2b68f,{roughness:.62}));chiasm.scale.set(1.7,.48,.68);chiasm.position.set(0,0,.4);scene.add(chiasm);
-  const lgnMat=mat(0x9a7cc4,{roughness:.5,clearcoat:.12});const lgnL=new THREE.Mesh(new THREE.SphereGeometry(.3,28,20),lgnMat);lgnL.scale.set(1,.72,1.35);lgnL.position.set(-1.12,0,-1.52);const lgnR=lgnL.clone();lgnR.material=lgnMat.clone();lgnR.position.x=1.12;scene.add(lgnL,lgnR);
-  const tractBase=basic(0xbca2ce,{roughness:.68});scene.add(tube([[-.45,0,.23],[-.72,0,-.58],[-1.12,0,-1.52]],.12,tractBase,54).mesh);scene.add(tube([[.45,0,.23],[.72,0,-.58],[1.12,0,-1.52]],.12,tractBase.clone(),54).mesh);
-  const temporalMat=basic(0x65c7e8,{emissive:0x143f52,emissiveIntensity:.5,roughness:.4});const nasalMat=basic(0xe3ad67,{emissive:0x573617,emissiveIntensity:.5,roughness:.4});
-  const lTemporal=tube([[-1.35,.055,2.35],[-1.18,.06,1.5],[-.5,.08,.52],[-.75,.08,-.55],[-1.12,.08,-1.52]],.038,temporalMat,66);const rTemporal=tube([[1.35,-.055,2.35],[1.18,-.06,1.5],[.5,-.08,.52],[.75,-.08,-.55],[1.12,-.08,-1.52]],.038,temporalMat.clone(),66);const lNasal=tube([[-1.35,-.055,2.35],[-1.18,-.05,1.5],[-.34,-.04,.48],[.32,.04,.12],[.82,.05,-.65],[1.12,.05,-1.52]],.038,nasalMat,72);const rNasal=tube([[1.35,.055,2.35],[1.18,.05,1.5],[.34,.04,.48],[-.32,-.04,.12],[-.82,-.05,-.65],[-1.12,-.05,-1.52]],.038,nasalMat.clone(),72);scene.add(lTemporal.mesh,rTemporal.mesh,lNasal.mesh,rNasal.mesh);
-  const brainMat=mat(0x8a7b82,{roughness:.9,clearcoat:.03,transparent:true,opacity:.9});const hemiL=new THREE.Mesh(new THREE.SphereGeometry(1,64,48),brainMat);hemiL.scale.set(1.18,1.02,1.7);hemiL.position.set(-1.05,0,-4.45);const hemiR=hemiL.clone();hemiR.material=brainMat.clone();hemiR.position.x=1.05;scene.add(hemiL,hemiR);const fissure=new THREE.Mesh(new THREE.BoxGeometry(.12,1.7,2.7),basic(0x332b31,{roughness:1,transparent:true,opacity:.55}));fissure.position.set(0,0,-4.45);scene.add(fissure);
-  const sulcusMat=basic(0x544951,{roughness:1,transparent:true,opacity:.7});[-1.05,1.05].forEach(x=>{for(let i=-2;i<=2;i++){const y=i*.26;scene.add(tube([[x-.68,y,-3.82],[x-.25,y+.08*Math.sin(i),-3.68],[x+.2,y-.07*Math.cos(i),-3.8],[x+.65,y,-4.04]],.025,sulcusMat.clone(),34).mesh)}});
-  const occMat=mat(0x8567cf,{roughness:.52,transparent:true,opacity:.58,emissive:0x2a185e,emissiveIntensity:.55});const occL=new THREE.Mesh(new THREE.SphereGeometry(.72,36,26),occMat);occL.scale.set(.72,1,.42);occL.position.set(-1.05,0,-5.72);const occR=occL.clone();occR.material=occMat.clone();occR.position.x=1.05;scene.add(occL,occR);
-  const radiationCurves={left:[],right:[]};const radMat=basic(0x9176c7,{transparent:true,opacity:.55,emissive:0x24194d,emissiveIntensity:.45,roughness:.5});for(let i=-2;i<=2;i++){const yy=i*.25;const L=tube([[-1.12,0,-1.52],[-1.55,yy*.45,-2.35],[-1.65,yy,-3.35],[-1.18,yy*.78,-5.45]],.052,radMat.clone(),68);scene.add(L.mesh);radiationCurves.left.push(L.curve);const R=tube([[1.12,0,-1.52],[1.55,yy*.45,-2.35],[1.65,yy,-3.35],[1.18,yy*.78,-5.45]],.052,radMat.clone(),68);scene.add(R.mesh);radiationCurves.right.push(R.curve)}
-  function spriteLabel(text,pos){const cv=document.createElement('canvas');cv.width=512;cv.height=128;const ctx=cv.getContext('2d');ctx.fillStyle='rgba(4,14,22,.78)';ctx.beginPath();ctx.roundRect(12,18,488,92,28);ctx.fill();ctx.strokeStyle='rgba(180,235,255,.42)';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#e8f9ff';ctx.font='600 34px Manrope, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,256,64);const tex=new THREE.CanvasTexture(cv);tex.colorSpace=THREE.SRGBColorSpace;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));sp.position.set(...pos);sp.scale.set(2.15,.54,1);scene.add(sp)}
-  spriteLabel(labels.chiasm,[0,.72,.45]);spriteLabel(labels.lgn,[-1.12,.65,-1.52]);spriteLabel(labels.lgn,[1.12,.65,-1.52]);spriteLabel(labels.v1,[0,1.35,-5.58]);
-  const centralRadL=radiationCurves.left[2],centralRadR=radiationCurves.right[2];const routes=[[leftN.curve,lTemporal.curve,centralRadL],[leftN.curve,lNasal.curve,centralRadR],[rightN.curve,rTemporal.curve,centralRadR],[rightN.curve,rNasal.curve,centralRadL]];
-  function routePoint(route,u){const n=route.length,scaled=Math.min(.999999,u)*n,idx=Math.min(n-1,Math.floor(scaled));return route[idx].getPoint(scaled-idx)}
-  const signalMat=basic(0x72edff,{emissive:0x35dfff,emissiveIntensity:2.8,roughness:.22});const particles=[];for(let i=0;i<28;i++){const p=new THREE.Mesh(new THREE.SphereGeometry(.048,12,8),signalMat);p.visible=false;scene.add(p);particles.push({p,route:routes[i%4],o:(i%7)/7})}
-  let runStart=null;section.querySelector('#cortexRun')?.addEventListener('click',e=>{runStart=performance.now();particles.forEach(x=>x.p.visible=true);e.currentTarget.classList.add('active');setTimeout(()=>e.currentTarget.classList.remove('active'),5200)});
-  loopFns.push(t=>{if(runStart==null)return;const elapsed=t-runStart,base=elapsed/4700;particles.forEach(x=>{const q=(base+x.o*.52)%1;x.p.position.copy(routePoint(x.route,q))});const pulse=Math.max(0,Math.sin(elapsed*.006));occL.material.opacity=.52+.32*pulse;occR.material.opacity=.52+.32*pulse;occL.material.emissiveIntensity=.45+1.25*pulse;occR.material.emissiveIntensity=.45+1.25*pulse;if(elapsed>5200){runStart=null;particles.forEach(x=>x.p.visible=false);occL.material.opacity=occR.material.opacity=.58;occL.material.emissiveIntensity=occR.material.emissiveIntensity=.55}});
+  c.dataset.brainAssetCredit='Brain atlas: Z-Anatomy / BodyParts3D / DBCLS via Brain Project, CC BY-SA 4.0';
+  const v=setup(c,[7.6,4.8,12.9],[0,0,-2.25]);const {scene,loopFns}=v;v.controls.minDistance=6;v.controls.maxDistance=19;
+  const labels=lang()==='fa'
+    ?{optic:'عصب بینایی',chiasm:'کیاسمای بینایی',tract:'راه بینایی',lgn:'هسته زانویی جانبی (LGN)',radiation:'تشعشعات بینایی',v1:'قشر بینایی'}
+    :{optic:'Optic nerve',chiasm:'Optic chiasm',tract:'Optic tract',lgn:'LGN',radiation:'Optic radiations',v1:'Visual cortex'};
+  let disposed=false;disposers.push(()=>{disposed=true});
+
+  const leftEye=makeEye(.72),rightEye=makeEye(.72);
+  leftEye.position.set(-1.45,.08,3.1);rightEye.position.set(1.45,.08,3.1);leftEye.rotation.y=.055;rightEye.rotation.y=-.055;scene.add(leftEye,rightEye);
+  const retinaMat=basic(0xe78364,{emissive:0x7e241a,emissiveIntensity:.9,roughness:.5,side:THREE.DoubleSide});
+  const retinaL=new THREE.Mesh(new THREE.CircleGeometry(.26,36),retinaMat),retinaR=new THREE.Mesh(new THREE.CircleGeometry(.26,36),retinaMat.clone());
+  retinaL.position.set(-1.45,.08,2.08);retinaR.position.set(1.45,.08,2.08);scene.add(retinaL,retinaR);
+
+  const nerveOuter=basic(0xd7bea0,{roughness:.78});
+  const leftN=tube([[-1.45,.08,2.08],[-1.28,.06,1.48],[-.77,.03,.78],[-.34,.02,.36]],.16,nerveOuter,72);
+  const rightN=tube([[1.45,.08,2.08],[1.28,.06,1.48],[.77,.03,.78],[.34,.02,.36]],.16,nerveOuter.clone(),72);scene.add(leftN.mesh,rightN.mesh);
+
+  const chiasmMat=mat(0xd8c1a5,{roughness:.62,emissive:0x26180d,emissiveIntensity:.15});
+  const chiasm=new THREE.Mesh(new THREE.SphereGeometry(.38,42,30),chiasmMat);chiasm.scale.set(1.8,.5,.72);chiasm.position.set(0,.02,.32);scene.add(chiasm);
+
+  const tractMat=basic(0xcab4a0,{roughness:.72});
+  const tractL=tube([[0,.02,.3],[-.48,.02,-.34],[-.92,.02,-1.28],[-1.18,.02,-2.16]],.125,tractMat,68);
+  const tractR=tube([[0,.02,.3],[.48,.02,-.34],[.92,.02,-1.28],[1.18,.02,-2.16]],.125,tractMat.clone(),68);scene.add(tractL.mesh,tractR.mesh);
+
+  const temporalMat=basic(0x65cfe8,{emissive:0x17485d,emissiveIntensity:.72,roughness:.38,transparent:true,opacity:.88});
+  const nasalMat=basic(0xe9b26a,{emissive:0x5f3a17,emissiveIntensity:.7,roughness:.38,transparent:true,opacity:.88});
+  const lTemporal=tube([[-1.45,.13,2.08],[-1.25,.12,1.45],[-.48,.1,.36],[-.58,.09,-.35],[-.96,.08,-1.28],[-1.18,.08,-2.16]],.034,temporalMat,82);
+  const rTemporal=tube([[1.45,.03,2.08],[1.25,.02,1.45],[.48,0,.36],[.58,-.01,-.35],[.96,-.02,-1.28],[1.18,-.02,-2.16]],.034,temporalMat.clone(),82);
+  const lNasal=tube([[-1.45,.03,2.08],[-1.25,.02,1.45],[-.36,0,.36],[.08,-.01,.24],[.55,-.02,-.35],[.98,-.03,-1.28],[1.18,-.03,-2.16]],.034,nasalMat,88);
+  const rNasal=tube([[1.45,.13,2.08],[1.25,.12,1.45],[.36,.1,.36],[-.08,.09,.24],[-.55,.08,-.35],[-.98,.07,-1.28],[-1.18,.07,-2.16]],.034,nasalMat.clone(),88);scene.add(lTemporal.mesh,rTemporal.mesh,lNasal.mesh,rNasal.mesh);
+
+  const lgnMat=mat(0x9b7fd0,{roughness:.46,clearcoat:.18,emissive:0x261948,emissiveIntensity:.32});
+  const lgnL=new THREE.Mesh(new THREE.SphereGeometry(.32,36,26),lgnMat);lgnL.scale.set(1,.72,1.45);lgnL.position.set(-1.18,.02,-2.16);
+  const lgnR=lgnL.clone();lgnR.material=lgnMat.clone();lgnR.position.x=1.18;scene.add(lgnL,lgnR);
+
+  function makeFallbackBrain(){
+    const g=new THREE.Group();
+    const baseMat=mat(0x9a7d82,{roughness:.82,clearcoat:.05,clearcoatRoughness:.8});
+    function hemi(side){
+      const geo=new THREE.SphereGeometry(1,88,64),p=geo.attributes.position,tmp=new THREE.Vector3();
+      for(let i=0;i<p.count;i++){
+        tmp.fromBufferAttribute(p,i);const n=tmp.clone().normalize();
+        const fold=1+.055*Math.sin(n.x*18+n.z*14)+.04*Math.sin(n.y*24-n.z*11)+.025*Math.sin((n.x+n.y)*31);
+        tmp.multiplyScalar(fold);p.setXYZ(i,tmp.x,tmp.y,tmp.z);
+      }
+      p.needsUpdate=true;geo.computeVertexNormals();
+      const mesh=new THREE.Mesh(geo,baseMat.clone());mesh.scale.set(1.22,1.02,1.6);mesh.position.set(side*1.06,.05,-4.55);mesh.rotation.z=side*.035;mesh.castShadow=true;mesh.receiveShadow=true;g.add(mesh);
+    }
+    hemi(-1);hemi(1);
+    const stem=new THREE.Mesh(new THREE.CapsuleGeometry(.34,1.2,10,22),mat(0x8f7378,{roughness:.84}));stem.position.set(0,-.85,-3.95);stem.rotation.x=.12;g.add(stem);
+    const cereMat=mat(0x8e7177,{roughness:.86});
+    [-.65,.65].forEach(x=>{const ce=new THREE.Mesh(new THREE.SphereGeometry(.72,48,34),cereMat.clone());ce.scale.set(1.05,.72,.72);ce.position.set(x,-.92,-5.25);g.add(ce)});
+    return g;
+  }
+  const fallbackBrain=makeFallbackBrain();scene.add(fallbackBrain);
+
+  const occBase=mat(0x8d70d4,{roughness:.5,transparent:true,opacity:.2,depthWrite:false,emissive:0x2d1b66,emissiveIntensity:.75});
+  const occL=new THREE.Mesh(new THREE.SphereGeometry(.78,42,30),occBase);occL.scale.set(.78,1,.38);occL.position.set(-1.08,.05,-5.95);
+  const occR=occL.clone();occR.material=occBase.clone();occR.position.x=1.08;scene.add(occL,occR);
+  const visualMaterials=[occL.material,occR.material];
+
+  const radiationCurves={left:[],right:[]};
+  const radBase=basic(0x9a81d3,{transparent:true,opacity:.56,emissive:0x2a1d58,emissiveIntensity:.55,roughness:.5});
+  for(let i=-4;i<=4;i++){
+    const yy=i*.19,low=i<0;
+    const lp=low
+      ?[[-1.18,.02,-2.16],[-1.65,-.28,-1.82],[-2.03,yy,-3.16],[-1.68,yy*.9,-4.6],[-1.16,yy*.9,-5.86]]
+      :[[-1.18,.02,-2.16],[-1.48,yy*.35,-2.65],[-1.82,yy,-3.72],[-1.58,yy*.9,-4.85],[-1.16,yy*.88,-5.86]];
+    const rp=lp.map(([x,y,z])=>[-x,y,z]);
+    const L=tube(lp,.04+(4-Math.abs(i))*.003,radBase.clone(),76);const R=tube(rp,.04+(4-Math.abs(i))*.003,radBase.clone(),76);scene.add(L.mesh,R.mesh);radiationCurves.left.push(L.curve);radiationCurves.right.push(R.curve);
+  }
+
+  function spriteLabel(text,pos,scale=1){
+    const cv=document.createElement('canvas');cv.width=640;cv.height=144;const ctx=cv.getContext('2d');
+    ctx.fillStyle='rgba(4,14,22,.82)';ctx.beginPath();ctx.roundRect(12,18,616,108,30);ctx.fill();ctx.strokeStyle='rgba(180,235,255,.42)';ctx.lineWidth=3;ctx.stroke();
+    ctx.fillStyle='#e8f9ff';ctx.font='600 34px Manrope, sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(text,320,72);
+    const tex=new THREE.CanvasTexture(cv);tex.colorSpace=THREE.SRGBColorSpace;const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));sp.position.set(...pos);sp.scale.set(2.35*scale,.53*scale,1);scene.add(sp);
+  }
+  spriteLabel(labels.optic,[-2.05,.82,1.33],.86);spriteLabel(labels.chiasm,[0,.82,.35],.92);spriteLabel(labels.tract,[1.03,.76,-.82],.86);
+  spriteLabel(labels.lgn,[-1.18,.78,-2.16],.76);spriteLabel(labels.lgn,[1.18,.78,-2.16],.76);spriteLabel(labels.radiation,[1.95,1.02,-4.15],.9);spriteLabel(labels.v1,[0,1.52,-5.92],.94);
+
+  const leftPre=new THREE.CatmullRomCurve3([new THREE.Vector3(-1.45,.08,2.08),new THREE.Vector3(-1.22,.06,1.38),new THREE.Vector3(-.48,.03,.48),new THREE.Vector3(0,.02,.3)]);
+  const rightPre=new THREE.CatmullRomCurve3([new THREE.Vector3(1.45,.08,2.08),new THREE.Vector3(1.22,.06,1.38),new THREE.Vector3(.48,.03,.48),new THREE.Vector3(0,.02,.3)]);
+  const centralL=radiationCurves.left[4],centralR=radiationCurves.right[4];
+  const routes=[[leftPre,tractL.curve,centralL],[leftPre,tractR.curve,centralR],[rightPre,tractR.curve,centralR],[rightPre,tractL.curve,centralL]];
+  function metric(route){const lengths=route.map(x=>x.getLength());return{route,lengths,total:lengths.reduce((a,b)=>a+b,0)}}
+  const routeMetrics=routes.map(metric);
+  function routePoint(m,u){let d=THREE.MathUtils.clamp(u,0,.999999)*m.total;for(let i=0;i<m.route.length;i++){if(d<=m.lengths[i])return m.route[i].getPointAt(d/m.lengths[i]);d-=m.lengths[i]}return m.route[m.route.length-1].getPoint(1)}
+  const signalMat=new THREE.MeshBasicMaterial({color:0x7ef6ff,transparent:true,opacity:.96,blending:THREE.AdditiveBlending,depthWrite:false});
+  const particles=[];for(let i=0;i<32;i++){const p=new THREE.Mesh(new THREE.SphereGeometry(.055,14,10),signalMat);p.visible=false;scene.add(p);particles.push({p,route:routeMetrics[i%4],delay:(i%8)*.034})}
+  let runStart=null;const runButton=section.querySelector('#cortexRun');
+  runButton?.addEventListener('click',e=>{runStart=performance.now();particles.forEach(x=>x.p.visible=false);e.currentTarget.classList.add('active')});
+
+  loopFns.push(t=>{
+    if(runStart==null)return;
+    const elapsed=t-runStart,head=elapsed/5200;
+    particles.forEach((x,i)=>{const q=head-x.delay;if(q>=0&&q<=1){x.p.visible=true;x.p.position.copy(routePoint(x.route,q));const s=.82+.3*Math.sin(elapsed*.012+i);x.p.scale.setScalar(s)}else{x.p.visible=false}});
+    const chPulse=Math.exp(-Math.pow((head-.24)/.085,2)),lgnPulse=Math.exp(-Math.pow((head-.49)/.095,2));
+    chiasm.material.emissiveIntensity=.15+1.9*chPulse;lgnL.material.emissiveIntensity=.32+2.2*lgnPulse;lgnR.material.emissiveIntensity=.32+2.2*lgnPulse;
+    const arrival=THREE.MathUtils.smoothstep(head,.72,1),pulse=arrival*(.55+.45*Math.pow(Math.sin(elapsed*.01),2));
+    visualMaterials.forEach(m=>{m.opacity=.18+.28*pulse;m.emissiveIntensity=.65+1.65*pulse});
+    if(elapsed>5900){runStart=null;particles.forEach(x=>x.p.visible=false);chiasm.material.emissiveIntensity=.15;lgnL.material.emissiveIntensity=lgnR.material.emissiveIntensity=.32;visualMaterials.forEach(m=>{m.opacity=.2;m.emissiveIntensity=.75});runButton?.classList.remove('active')}
+  });
+
+  // Runtime-loaded, real anatomical atlas. The fallback above remains visible if the CDN/model cannot load.
+  // 3D anatomy asset: Brain Project (Z-Anatomy / BodyParts3D / DBCLS), CC BY-SA 4.0.
+  (async()=>{
+    try{
+      const [{GLTFLoader},{DRACOLoader}]=await Promise.all([
+        import('https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/GLTFLoader.js'),
+        import('https://cdn.jsdelivr.net/npm/three@0.180.0/examples/jsm/loaders/DRACOLoader.js')
+      ]);
+      if(disposed)return;
+      const draco=new DRACOLoader();draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+      const loader=new GLTFLoader();loader.setDRACOLoader(draco);
+      loader.load('https://cdn.jsdelivr.net/gh/itayinbarr/brainproject@2929e94f521a8ddceab26bc100a98dc06b0da060/brain-atlas/models/brain.glb',gltf=>{
+        if(disposed){draco.dispose();return}
+        const model=gltf.scene,visibleMeshes=[],occMeshes=[];
+        const brainTissue=mat(0xa4878c,{roughness:.76,clearcoat:.07,clearcoatRoughness:.72});
+        const occTissue=mat(0x8b70d2,{roughness:.64,clearcoat:.08,emissive:0x27164f,emissiveIntensity:.6});visualMaterials.push(occTissue);
+        model.traverse(o=>{
+          if(!o.isMesh)return;
+          const d=`${o.name||''} ${o.userData?.bx_label||''} ${o.userData?.bx_region||''} ${o.userData?.bx_cat||''}`.toLowerCase();
+          if(/arter|vein|sinus|mening|dura|ventric|cranial|optic|radiation|tract/.test(d)){o.visible=false;return}
+          const occ=/occipital|cuneus|lingual|calcarine/.test(d);o.material=occ?occTissue:brainTissue;o.castShadow=false;o.receiveShadow=true;visibleMeshes.push(o);if(occ)occMeshes.push(o);
+        });
+        model.updateMatrixWorld(true);
+        const box=new THREE.Box3().makeEmpty(),tmpBox=new THREE.Box3();
+        visibleMeshes.forEach(o=>{o.geometry.computeBoundingBox();tmpBox.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld);box.union(tmpBox)});
+        if(box.isEmpty()){draco.dispose();return}
+        const center=box.getCenter(new THREE.Vector3()),size=box.getSize(new THREE.Vector3());
+        let occCenter=center.clone().add(new THREE.Vector3(0,0,-1));
+        if(occMeshes.length){const ob=new THREE.Box3().makeEmpty();occMeshes.forEach(o=>{tmpBox.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld);ob.union(tmpBox)});if(!ob.isEmpty())occCenter=ob.getCenter(new THREE.Vector3())}
+        const occVec=occCenter.clone().sub(center),pivot=new THREE.Group();model.position.sub(center);pivot.add(model);
+        const targetSize=4.85/Math.max(size.x,size.y,size.z);pivot.scale.setScalar(targetSize);
+        const horizontal=Math.hypot(occVec.x,occVec.z);if(horizontal>.001)pivot.rotation.y=Math.atan2(-occVec.x,occVec.z)+Math.PI;
+        pivot.position.set(0,.03,-4.5);scene.add(pivot);fallbackBrain.visible=false;draco.dispose();
+      },undefined,()=>draco.dispose());
+    }catch(err){console.warn('Real anatomical brain model could not load; using local fallback.',err)}
+  })();
 }
 
 function initAll(){initVision();initRetina();initDisorder();initMuscles();initCortex();}
