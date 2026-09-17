@@ -24,6 +24,45 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Correct Eye to Visual Cortex anatomy proportions
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('advanced-eye-webgl.js')
+          s = p.read_text()
+          replacements = {
+            "const v=setup(c,[7.6,4.8,12.9],[0,0,-2.25])": "const v=setup(c,[8.6,5.2,14.8],[0,0,-2.15])",
+            "const leftEye=makeEye(.72),rightEye=makeEye(.72);": "const leftEye=makeEye(.28),rightEye=makeEye(.28);",
+            "leftEye.position.set(-1.45,.08,3.1);rightEye.position.set(1.45,.08,3.1)": "leftEye.position.set(-.62,.08,2.55);rightEye.position.set(.62,.08,2.55)",
+            "retinaL.position.set(-1.45,.08,2.08);retinaR.position.set(1.45,.08,2.08)": "retinaL.position.set(-.62,.08,2.14);retinaR.position.set(.62,.08,2.14)",
+            "const leftN=tube([[-1.45,.08,2.08],[-1.28,.06,1.48],[-.77,.03,.78],[-.34,.02,.36]],.16,nerveOuter,72);": "const leftN=tube([[-.62,.08,2.14],[-.61,.07,1.82],[-.52,.05,1.34],[-.31,.03,.82],[-.16,.02,.58]],.095,nerveOuter,72);",
+            "const rightN=tube([[1.45,.08,2.08],[1.28,.06,1.48],[.77,.03,.78],[.34,.02,.36]],.16,nerveOuter.clone(),72);": "const rightN=tube([[.62,.08,2.14],[.61,.07,1.82],[.52,.05,1.34],[.31,.03,.82],[.16,.02,.58]],.095,nerveOuter.clone(),72);",
+            "const chiasm=new THREE.Mesh(new THREE.SphereGeometry(.38,42,30),chiasmMat);chiasm.scale.set(1.8,.5,.72);chiasm.position.set(0,.02,.32);": "const chiasm=new THREE.Mesh(new THREE.SphereGeometry(.22,42,30),chiasmMat);chiasm.scale.set(1.75,.5,.78);chiasm.position.set(0,.02,.52);",
+            "const tractL=tube([[0,.02,.3],[-.48,.02,-.34],[-.92,.02,-1.28],[-1.18,.02,-2.16]],.125,tractMat,68);": "const tractL=tube([[-.13,.02,.48],[-.32,.02,.12],[-.58,.02,-.72],[-.82,.02,-1.62],[-.9,.02,-2.35]],.085,tractMat,68);",
+            "const tractR=tube([[0,.02,.3],[.48,.02,-.34],[.92,.02,-1.28],[1.18,.02,-2.16]],.125,tractMat.clone(),68);": "const tractR=tube([[.13,.02,.48],[.32,.02,.12],[.58,.02,-.72],[.82,.02,-1.62],[.9,.02,-2.35]],.085,tractMat.clone(),68);",
+            "lgnL.position.set(-1.18,.02,-2.16);": "lgnL.position.set(-.9,.02,-2.35);",
+            "lgnR.position.x=1.18": "lgnR.position.x=.9",
+            "const fallbackBrain=makeFallbackBrain();scene.add(fallbackBrain);": "const fallbackBrain=makeFallbackBrain();fallbackBrain.scale.setScalar(1.24);fallbackBrain.position.set(0,.02,-.18);scene.add(fallbackBrain);",
+            "const targetSize=4.85/Math.max(size.x,size.y,size.z);": "const targetSize=6.15/Math.max(size.x,size.y,size.z);",
+            "pivot.position.set(0,.03,-4.5)": "pivot.position.set(0,.03,-4.35)"
+          }
+          for old, new in replacements.items():
+            if old not in s:
+              raise SystemExit(f'Missing expected cortex source fragment: {old}')
+            s = s.replace(old, new, 1)
+          # Re-anchor the colored retinal fiber paths so they begin at the posterior pole of each correctly scaled eye.
+          s = s.replace("[-1.45,.13,2.08],[-1.25,.12,1.45],[-.48,.1,.36],[-.58,.09,-.35],[-.96,.08,-1.28],[-1.18,.08,-2.16]", "[-.62,.11,2.14],[-.6,.1,1.76],[-.48,.08,1.2],[-.16,.06,.54],[-.34,.06,-.15],[-.66,.06,-1.25],[-.9,.06,-2.35]", 1)
+          s = s.replace("[1.45,.03,2.08],[1.25,.02,1.45],[.48,0,.36],[.58,-.01,-.35],[.96,-.02,-1.28],[1.18,-.02,-2.16]", "[.62,.05,2.14],[.6,.04,1.76],[.48,.02,1.2],[.16,0,.54],[.34,-.01,-.15],[.66,-.02,-1.25],[.9,-.02,-2.35]", 1)
+          s = s.replace("[-1.45,.03,2.08],[-1.25,.02,1.45],[-.36,0,.36],[.08,-.01,.24],[.55,-.02,-.35],[.98,-.03,-1.28],[1.18,-.03,-2.16]", "[-.62,.05,2.14],[-.6,.04,1.76],[-.46,.02,1.18],[-.13,.01,.56],[.12,0,.48],[.42,-.01,-.28],[.72,-.02,-1.35],[.9,-.02,-2.35]", 1)
+          s = s.replace("[1.45,.13,2.08],[1.25,.12,1.45],[.36,.1,.36],[-.08,.09,.24],[-.55,.08,-.35],[-.98,.07,-1.28],[-1.18,.07,-2.16]", "[.62,.11,2.14],[.6,.1,1.76],[.46,.08,1.18],[.13,.07,.56],[-.12,.06,.48],[-.42,.05,-.28],[-.72,.05,-1.35],[-.9,.05,-2.35]", 1)
+          s = s.replace("new THREE.Vector3(-1.45,.08,2.08),new THREE.Vector3(-1.22,.06,1.38),new THREE.Vector3(-.48,.03,.48),new THREE.Vector3(0,.02,.3)", "new THREE.Vector3(-.62,.08,2.14),new THREE.Vector3(-.6,.06,1.72),new THREE.Vector3(-.43,.04,1.12),new THREE.Vector3(-.14,.02,.54)", 1)
+          s = s.replace("new THREE.Vector3(1.45,.08,2.08),new THREE.Vector3(1.22,.06,1.38),new THREE.Vector3(.48,.03,.48),new THREE.Vector3(0,.02,.3)", "new THREE.Vector3(.62,.08,2.14),new THREE.Vector3(.6,.06,1.72),new THREE.Vector3(.43,.04,1.12),new THREE.Vector3(.14,.02,.54)", 1)
+          # Move LGN/radiation origins to the corrected bilateral relay nodes and enlarge the posterior cortical target with the brain.
+          s = s.replace("[-1.18,.02,-2.16]", "[-.9,.02,-2.35]").replace("[1.18,.02,-2.16]", "[.9,.02,-2.35]")
+          s = s.replace("occL.position.set(-1.08,.05,-5.95)", "occL.position.set(-1.35,.05,-6.55)").replace("occR.position.x=1.08", "occR.position.x=1.35")
+          s = s.replace("[-1.16,yy*.9,-5.86]", "[-1.4,yy*.9,-6.35]").replace("[-1.16,yy*.88,-5.86]", "[-1.4,yy*.88,-6.35]")
+          p.write_text(s)
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
