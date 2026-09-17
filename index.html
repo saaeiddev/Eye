@@ -38,6 +38,7 @@
     <footer class="footer"><span>EYE · Interactive 3D Anatomy</span><span>Created as an educational WebGL experience · <a href="#top">Back to top ↑</a></span></footer><noscript><div class="noscript">JavaScript is required to render the interactive 3D eye model.</div></noscript>
   </main>
   <script src="./i18n.js?v=20260917-bilingual"></script>
+  <script src="./advanced-eye.js?v=20260917-advanced"></script>
   <script type="module">
     import('./eye.js?v=20260912-realism').catch(error=>{console.error(error);const box=document.querySelector('.loader-inner');box.textContent='The 3D viewer could not start. Check your connection and WebGL support, then reload.';const retry=document.createElement('button');retry.textContent='Reload viewer';retry.className='pill';retry.onclick=()=>location.reload();box.appendChild(retry)});
   </script>
